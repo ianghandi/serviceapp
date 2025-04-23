@@ -305,15 +305,45 @@ function OAuthWizard() {
             <button className="px-4 py-2 bg-gray-300 rounded" onClick={prevStep}>
               Back
             </button>
-            <button
-              className="px-4 py-2 bg-green-600 text-white rounded"
-              onClick={() => {
-                // TODO: Send this data to your backend
-                alert("Submitted! (Hook this up to your backend API)");
-              }}
-            >
-              Submit
-            </button>
+           <button
+  className="px-4 py-2 bg-green-600 text-white rounded"
+  onClick={async () => {
+    const payload = {
+      appName: appName,
+      description: description,
+      apmID: apmID,
+      jiraTicket: jiraTicket,
+      clientId: clientId,
+      isSPA,
+      usePKCE,
+      needsADGroups,
+      redirectURIs: redirectURIs.split("\\n").map(uri => uri.trim()),
+      userEmail: "testuser@example.com" // TODO: replace with real user from auth
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/api/integrations/oauth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Server error");
+
+      const data = await res.json();
+      alert("✅ Integration submitted! ID: " + data.id);
+      // Optionally reset form or redirect
+    } catch (err) {
+      console.error("Submission error:", err);
+      alert("❌ Submission failed. Please try again.");
+    }
+  }}
+>
+  Submit
+</button>
+
           </div>
         </>
       )}
