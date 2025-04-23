@@ -100,4 +100,82 @@ function AdminReviewForm({ data, onBack, onApprove, onReject }) {
         <div>
           <label className="block text-sm text-gray-700">App Name</label>
           <input
-            className="w-full border px-3 py
+            className="w-full border px-3 py-2 rounded"
+            value={formData.appName}
+            onChange={(e) => handleChange("appName", e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-700">Type</label>
+          <input
+            disabled
+            className="w-full border px-3 py-2 rounded bg-gray-100"
+            value={formData.type}
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-700">APM ID</label>
+          <input
+            className="w-full border px-3 py-2 rounded"
+            value={formData.apmID}
+            onChange={(e) => handleChange("apmID", e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-700">Jira Ticket</label>
+          <input
+            className="w-full border px-3 py-2 rounded"
+            value={formData.jira}
+            onChange={(e) => handleChange("jira", e.target.value)}
+          />
+        </div>
+        {formData.type === "OAuth" && (
+          <>
+            <div className="col-span-2">
+              <label className="block text-sm text-gray-700">Client ID</label>
+              <input
+                className="w-full border px-3 py-2 rounded"
+                value={formData.clientId}
+                onChange={(e) => handleChange("clientId", e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700">AD Groups</label>
+              <select
+                className="w-full border px-3 py-2 rounded"
+                value={formData.needsADGroups ? "yes" : "no"}
+                onChange={(e) => handleChange("needsADGroups", e.target.value === "yes")}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </>
+        )}
+        {formData.type === "SAML" && (
+          <>
+            <div className="col-span-2">
+              <label className="block text-sm text-gray-700">Entity ID</label>
+              <input
+                className="w-full border px-3 py-2 rounded"
+                value={formData.entityId}
+                onChange={(e) => handleChange("entityId", e.target.value)}
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="flex justify-between pt-6">
+        <button className="px-4 py-2 bg-red-600 text-white rounded" onClick={onReject}>
+          Reject
+        </button>
+        <button className="px-4 py-2 bg-green-600 text-white rounded" onClick={onApprove}>
+          Approve & Push to PingFederate
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default AdminReview;
