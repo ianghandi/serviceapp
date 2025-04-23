@@ -49,7 +49,6 @@ function OAuthWizard() {
               className="w-full px-4 py-2 border rounded"
               value={appName}
               onChange={(e) => setAppName(e.target.value)}
-              required
             />
           </div>
 
@@ -63,7 +62,6 @@ function OAuthWizard() {
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
             />
           </div>
 
@@ -77,7 +75,6 @@ function OAuthWizard() {
               className="w-full px-4 py-2 border rounded"
               value={apmID}
               onChange={(e) => setApmID(e.target.value)}
-              required
             />
           </div>
 
@@ -94,7 +91,6 @@ function OAuthWizard() {
                 setJiraTicket(e.target.value);
                 setJiraError("");
               }}
-              required
             />
             {jiraError && <p className="text-sm text-red-600 mt-1">{jiraError}</p>}
           </div>
@@ -119,17 +115,71 @@ function OAuthWizard() {
           </div>
         </>
       )}
-    </div>
-  );
-}
 
-export default OAuthWizard;
+      {step === 2 && (
+        <>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Desired Client ID
+            <span className="ml-1 text-blue-500 cursor-help" title="This ID must be unique. It will be used in PingFederate.">❓</span>
+          </label>
+          <input
+            type="text"
+            value={clientId}
+            onChange={(e) => {
+              setClientId(e.target.value);
+              setClientIdError("");
+            }}
+            className="w-full px-4 py-2 border rounded mb-2"
+            placeholder="e.g., my-app-client-id"
+          />
+          {clientIdError && <p className="text-red-600 text-sm mb-2">{clientIdError}</p>}
+          <div className="flex justify-between mt-6">
+            <button className="px-4 py-2 bg-gray-300 rounded" onClick={prevStep}>Back</button>
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+              onClick={nextStep}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
 
-// Additional steps 4-7 will be appended below in a complete implementation
-// Example placeholders could include redirect URIs, AD group requirement, summary, and submission
 
+      {step === 3 && (
+        <>
+          <p className="mb-4">Is your application a Single Page Application (SPA)?</p>
+          <div className="space-x-4">
+            <button
+              className={`px-4 py-2 rounded ${isSPA === true ? "bg-blue-600 text-white" : "bg-gray-100"}`}
+              onClick={() => {
+                setIsSPA(true);
+                setUsePKCE(true); // enforce PKCE for SPAs
+              }}
+            >
+              Yes
+            </button>
+            <button
+              className={`px-4 py-2 rounded ${isSPA === false ? "bg-blue-600 text-white" : "bg-gray-100"}`}
+              onClick={() => setIsSPA(false)}
+            >
+              No
+            </button>
+          </div>
 
-      {/* Step 4: PKCE vs Client Secret (for non-SPA) */}
+          <div className="mt-6 flex justify-between">
+            <button className="px-4 py-2 bg-gray-300 rounded" onClick={prevStep}>
+              Back
+            </button>
+            {isSPA !== null && (
+              <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={nextStep}>
+                Next
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
       {step === 4 && isSPA === false && (
         <>
           <p className="mb-4">How will your app authenticate?</p>
@@ -162,15 +212,14 @@ export default OAuthWizard;
           </div>
         </>
       )}
-
-      {/* Step 5: Redirect URIs */}
       {step === 5 && (
         <>
-          <label className="block mb-2 text-sm font-medium text-gray-700">Redirect URIs (max 10)</label>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Redirect URIs (maximum 10, one per line)
+          </label>
           <textarea
             className="w-full px-4 py-2 border rounded"
-            placeholder="http://localhost:3000
-https://yourapp.com/callback"
+            placeholder={"https://yourapp.com/callback\nhttp://localhost:3000"}
             rows={5}
             value={redirectURIs}
             onChange={(e) => setRedirectURIs(e.target.value)}
@@ -180,15 +229,21 @@ https://yourapp.com/callback"
             <button
               className="px-4 py-2 bg-blue-600 text-white rounded"
               onClick={() => {
-                const uris = redirectURIs.trim().split("\n").filter(uri => uri);
+                const uris = redirectURIs
+                  .split("\n")
+                  .map((uri) => uri.trim())
+                  .filter(Boolean);
+
                 if (uris.length > 10) {
                   alert("You can enter up to 10 URIs only.");
                   return;
                 }
-                if (uris.some(uri => uri.includes("*"))) {
+
+                if (uris.some((uri) => uri.includes("*"))) {
                   alert("Wildcards (*) are not allowed in redirect URIs.");
                   return;
                 }
+
                 nextStep();
               }}
             >
@@ -198,7 +253,6 @@ https://yourapp.com/callback"
         </>
       )}
 
-      {/* Step 6: AD Group Inclusion */}
       {step === 6 && (
         <>
           <p className="mb-4">Do you need AD groups returned in the ID token?</p>
@@ -226,8 +280,6 @@ https://yourapp.com/callback"
           </div>
         </>
       )}
-
-      {/* Step 7: Review & Submit */}
       {step === 7 && (
         <>
           <h3 className="text-xl font-bold mb-4">Review Your Submission</h3>
@@ -240,12 +292,33 @@ https://yourapp.com/callback"
             <li><strong>SPA:</strong> {isSPA ? "Yes" : "No"}</li>
             <li><strong>Auth Method:</strong> {usePKCE ? "PKCE" : "Client Secret"}</li>
             {!usePKCE && <li><strong>Client Secret:</strong> {clientSecret}</li>}
-            <li><strong>Redirect URIs:</strong> <pre className="whitespace-pre-wrap">{redirectURIs}</pre></li>
+            <li>
+              <strong>Redirect URIs:</strong>
+              <pre className="whitespace-pre-wrap bg-gray-50 p-2 rounded border">
+                {redirectURIs}
+              </pre>
+            </li>
             <li><strong>AD Groups in ID Token:</strong> {needsADGroups ? "Yes" : "No"}</li>
           </ul>
+
           <div className="flex justify-between mt-6">
-            <button className="px-4 py-2 bg-gray-300 rounded" onClick={prevStep}>Back</button>
-            <button className="px-4 py-2 bg-green-600 text-white rounded">Submit</button>
+            <button className="px-4 py-2 bg-gray-300 rounded" onClick={prevStep}>
+              Back
+            </button>
+            <button
+              className="px-4 py-2 bg-green-600 text-white rounded"
+              onClick={() => {
+                // TODO: Send this data to your backend
+                alert("Submitted! (Hook this up to your backend API)");
+              }}
+            >
+              Submit
+            </button>
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+export default OAuthWizard;
