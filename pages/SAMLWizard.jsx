@@ -112,7 +112,40 @@ function SAMLWizard() {
           </ul>
           <div className="flex justify-between mt-6">
             <button className="px-4 py-2 bg-gray-300 rounded" onClick={prevStep}>Back</button>
-            <button className="px-4 py-2 bg-green-600 text-white rounded" onClick={nextStep}>Submit</button>
+            <button
+              className="px-4 py-2 bg-green-600 text-white rounded"
+              onClick={async () => {
+                const payload = {
+                  appName,
+                  description,
+                  apmID,
+                  jiraTicket,
+                  entityId,
+                  acsUrl,
+                  attributes,
+                  userEmail: "testuser@example.com", // replace with real user email from login
+                };
+
+                try {
+                  const res = await fetch("http://localhost:5000/api/integrations/saml", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  });
+
+                  if (!res.ok) throw new Error("Server error");
+
+                  const data = await res.json();
+                  alert("SAML request submitted! ID: " + data.id);
+                  nextStep(); // move to metadata download & instructions
+                } catch (err) {
+                  console.error(err);
+                  alert("Submission failed. Please try again.");
+                }
+              }}
+            >
+              Submit
+            </button>
           </div>
         </>
       )}
