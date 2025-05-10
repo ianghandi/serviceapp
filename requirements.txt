@@ -1,0 +1,87 @@
+
+I want to build an internal self-service integration portal for an Identity and Access Management team that uses a modern and sleek frontend and Python (Flask) for the backend. The backend will connect to SQLite installation on the same server to keep up with the integrations.
+
+This portal should allow internal developers to request OAuth2/OIDC or SAML integrations with PingFederate, and allow IAM admins to approve or reject these requests. Users should also have the ability to go back to their previous approved and/or awaiting approval integrations to edit them to resubmit them if needed . 
+
+---
+
+## Requirements
+
+### Frontend
+
+1. A Modern UI that has professional animations and feels. Choose the best frontend applications to accomplish this.
+
+2. Create a clean, responsive layout:
+   - Navbar with links to: Dashboard, New Integration, My Integrations, Admin Panel
+   - Use a card-style container for main content
+   - Add a dark mode toggle
+
+3. - OIDC login with PingFederate that uses ad group membership to log users in and to separate the admin panel from the 
+
+---
+
+### OAuth Wizard (7 steps)
+
+1. App Info – App Name, Description, Jira Ticket (URL - Mandatory Field), App ID Number
+2. Desired Client ID – check for duplicates
+3. SPA check – if yes, enforce PKCE
+4. Auth method – PKCE or Client Secret (only if not SPA)
+5. Redirect URIs – up to 10, new line each, no wildcards, allow http localhost with port
+6. AD Groups – if yes, assign different ATM and OIDC policies
+7. Review & Submit
+
+---
+
+### SAML Wizard (5 steps)
+
+(Allow users to upload their SP metadata file to fill the Entity ID, ACS URL, and SP certificate  details in automatically)
+1. App Info – App Name, Description, Jira Ticket (URL - Mandatory Field), App ID Number
+2. Entity ID and ACS URL 
+3. Expected attributes returned in the SAML assertion (entered as free text), Optional SP certificate (As an upload or automatically entered if the user uploads a SP metadata file containing the certificate)
+4. Review & Submit
+5. Confirmation + IDP Metadata Download Link
+
+---
+
+### My Integrations Page
+
+- Shows integrations submitted by the logged-in user
+- Fields: App Name, Type, Status, Days Remaining until deletion
+- OAuth entries allow user to toggle "Needs AD Groups"
+- Display countdown until auto-deletion
+
+---
+
+### Admin Panel
+
+- View all submissions
+- Filter by type/status/user
+- Inline review/edit form
+- Approve → pushes to PingFederate
+- Reject → marks integration as rejected with explanation
+
+---
+
+### Backend (Flask + Flask-CORS)
+
+Endpoints:
+
+- POST /api/integrations/oauth
+- POST /api/integrations/saml
+- GET /api/my-integrations?email=user@example.com
+- GET /api/admin/integrations
+- PATCH /api/admin/integration/<id>
+- POST /api/admin/approve/<id>
+- POST /api/admin/reject/<id>
+
+---
+
+### Additional Features
+
+- Logs rotate daily with timestamped filenames
+- SAML attribute format: urn:oasis:names:tc:SAML:2.0:attrname-format:basic
+- SAML_Subject format: urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress (source: AUTHENTICATION_POLICY_CONTRACT, value: mail)
+- Admin settings will be stored in a JSON config file
+- Frontend fields should use tooltips for descriptions
+- Auto-deletion of expired entries via PingFederate Admin API after 30 days
+
